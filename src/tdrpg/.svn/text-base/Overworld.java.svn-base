@@ -1,0 +1,115 @@
+package tdrpg;
+
+import java.awt.Color;
+import java.awt.Dimension;
+import java.awt.Graphics;
+import java.awt.Graphics2D;
+import java.awt.image.BufferedImage;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.util.Scanner;
+
+import javax.imageio.ImageIO;
+import javax.swing.JPanel;
+
+public class Overworld extends JPanel{
+
+	private int spriteX = 8;
+	private int spriteY = 8;
+	private int envXStart = 0;
+	private int envYStart = 0;
+	private File file;
+	private BufferedImage[][] images = new BufferedImage[153][153];
+	private BufferedImage tree;
+	private BufferedImage dirt;
+	private BufferedImage grass;
+	private BufferedImage sprite;
+	private Scanner scanner;
+	
+	public Overworld(){
+		setBackground(Color.BLACK);
+		try{
+			file = new File("bgfile1.txt");
+			tree = ImageIO.read(new File("tree.png"));
+			grass = ImageIO.read(new File("grass.png"));
+			dirt = ImageIO.read(new File("dirt.png"));
+			sprite = ImageIO.read(new File("sprite.png"));
+			scanner = new Scanner(file);
+		}catch(Exception e){
+			System.out.println("no file");
+		}
+		readENVFile();
+	}
+	
+	public void checkMovement(){
+		if (BGPanel.leftPressed){
+			if (envXStart > 0 && !images[envYStart + spriteY][envXStart + spriteX -1].equals(tree)){
+				System.out.println(envXStart);
+				envXStart--;
+			}
+		}
+		if (BGPanel.rightPressed){
+			if (envXStart + 17 < 153 && !images[envYStart + spriteY][envXStart + spriteX +1].equals(tree)){
+				System.out.println(envXStart);
+				envXStart++;
+			}
+		}
+		if (BGPanel.upPressed){
+			if (envYStart > 0 && !images[envYStart + spriteY - 1][envXStart + spriteX].equals(tree)){
+				System.out.println(envXStart);
+				envYStart -= 1;
+			}
+		}
+		if (BGPanel.downPressed){
+			if (envYStart + 17 < 153 && !images[envYStart + spriteY + 1][envXStart + spriteX].equals(tree)){
+				System.out.println(envXStart);
+				envYStart += 1;
+			}
+		}
+	}
+	
+	public void readENVFile(){
+		String s;
+		try {
+			scanner = new Scanner(file);
+		} catch (FileNotFoundException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		for (int yIndex = 0; yIndex < 153; yIndex++){
+			s = scanner.nextLine();
+			if (s.equals("")){
+				s = scanner.nextLine();//blank lines separate screens horizontally
+			}
+			for (int xIndex = 0; xIndex < 153; xIndex++){
+				System.out.print(s.charAt(xIndex));
+				if (s.charAt(xIndex) == 'd'){
+					images[yIndex][xIndex] = dirt;
+				} else if (s.charAt(xIndex) == 't'){
+					images[yIndex][xIndex] = tree;
+				} else if (s.charAt(xIndex) == 'g'){
+					images[yIndex][xIndex] = grass;
+				}
+			}
+		}
+	}
+	
+	@Override
+    public Dimension getPreferredSize() {
+        return new Dimension(640, 640);
+    }
+
+    @Override
+    protected void paintComponent(Graphics g) {
+        super.paintComponent(g);
+        checkMovement();
+        for (int i = 0; i < 17; i++){
+        	for (int j = 0; j < 17; j++){
+        		g.drawImage(images[i + envYStart][j + envXStart], j * tree.getWidth(), i * tree.getHeight(), null);
+        	}
+        }
+		g.drawImage(sprite,  spriteX * tree.getWidth(),  spriteY * tree.getHeight(), null);
+    }
+	
+}
